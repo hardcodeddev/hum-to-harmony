@@ -1,12 +1,14 @@
 import React from 'react';
-import './App.css';
+import { createRoot } from 'react-dom/client';
+import App from './components/App';
 
-const App = () => {
-    return (
-        <div className="App">
-            <h1>Welcome to Hum to Harmony</h1>
-        </div>
-    );
-};
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('Root container not found');
+}
 
-export default App;
+createRoot(container).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
