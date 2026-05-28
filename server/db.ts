@@ -1,14 +1,14 @@
-import Database from 'better-sqlite3';
+import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
 
 const dataDir = path.join(process.cwd(), 'data');
 fs.mkdirSync(path.join(dataDir, 'uploads'), { recursive: true });
 
-const db = new Database(path.join(dataDir, 'db.sqlite'));
+const db = new DatabaseSync(path.join(dataDir, 'db.sqlite'));
 
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+db.exec('PRAGMA journal_mode = WAL');
+db.exec('PRAGMA foreign_keys = ON');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (

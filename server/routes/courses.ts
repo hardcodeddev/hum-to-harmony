@@ -23,7 +23,7 @@ router.post('/', (req, res) => {
     'INSERT INTO courses (user_id, title, url, description, notes, tags) VALUES (?, ?, ?, ?, ?, ?)'
   ).run(userId, title.trim(), url.trim(), description.trim(), notes.trim(), tags.trim());
 
-  res.status(201).json({ id: result.lastInsertRowid, title: title.trim(), url: url.trim() });
+  res.status(201).json({ id: Number(result.lastInsertRowid), title: title.trim(), url: url.trim() });
 });
 
 router.get('/:id', (req, res) => {

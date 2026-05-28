@@ -19,8 +19,8 @@ router.post('/register', async (req, res) => {
   const hash = await bcrypt.hash(password, 12);
   try {
     const result = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)').run(username.trim(), hash);
-    req.session.userId = result.lastInsertRowid as number;
-    res.json({ id: result.lastInsertRowid, username: username.trim() });
+    req.session.userId = Number(result.lastInsertRowid);
+    res.json({ id: Number(result.lastInsertRowid), username: username.trim() });
   } catch (err: any) {
     if (err.message?.includes('UNIQUE')) {
       return res.status(409).json({ error: 'Username already taken' });

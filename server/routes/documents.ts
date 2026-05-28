@@ -36,7 +36,7 @@ router.post('/', upload.single('file'), (req, res) => {
     'INSERT INTO documents (user_id, title, mime_type, file_path, size_bytes, body_text, tags) VALUES (?, ?, ?, ?, ?, ?, ?)'
   ).run(userId, docTitle, mime, relativePath, size, bodyText, tags.trim());
 
-  res.status(201).json({ id: result.lastInsertRowid, title: docTitle, mime_type: mime, size_bytes: size, tags: tags.trim() });
+  res.status(201).json({ id: Number(result.lastInsertRowid), title: docTitle, mime_type: mime, size_bytes: size, tags: tags.trim() });
 });
 
 router.get('/:id', (req, res) => {
