@@ -2,6 +2,16 @@ import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
 
+/**
+ * SQLite via Node's built-in node:sqlite module.
+ *
+ * No native compilation (it ships inside Node 22+) and no WASM. We deliberately
+ * avoid the FTS5 extension because it is not compiled into every SQLite build
+ * (Homebrew Node, some platform sql.js builds, etc.), which made search crash
+ * with "no such module: fts5". Search is implemented with plain LIKE in
+ * routes/search.ts, which works on any SQLite engine.
+ */
+
 const dataDir = path.join(process.cwd(), 'data');
 fs.mkdirSync(path.join(dataDir, 'uploads'), { recursive: true });
 
@@ -43,48 +53,8 @@ db.exec(`
     updated_at  INTEGER NOT NULL DEFAULT (unixepoch())
   );
 
-  CREATE VIRTUAL TABLE IF NOT EXISTS docs_fts USING fts5(
-    title,
-    body,
-    tokenize='porter unicode61'
-  );
-
-  CREATE VIRTUAL TABLE IF NOT EXISTS courses_fts USING fts5(
-    title,
-    body,
-    tags,
-    tokenize='porter unicode61'
-  );
-
-  CREATE TRIGGER IF NOT EXISTS docs_fts_insert AFTER INSERT ON documents BEGIN
-    INSERT INTO docs_fts(rowid, title, body)
-    VALUES (NEW.id, NEW.title, COALESCE(NEW.body_text, ''));
-  END;
-
-  CREATE TRIGGER IF NOT EXISTS docs_fts_update AFTER UPDATE ON documents BEGIN
-    DELETE FROM docs_fts WHERE rowid = OLD.id;
-    INSERT INTO docs_fts(rowid, title, body)
-    VALUES (NEW.id, NEW.title, COALESCE(NEW.body_text, ''));
-  END;
-
-  CREATE TRIGGER IF NOT EXISTS docs_fts_delete AFTER DELETE ON documents BEGIN
-    DELETE FROM docs_fts WHERE rowid = OLD.id;
-  END;
-
-  CREATE TRIGGER IF NOT EXISTS courses_fts_insert AFTER INSERT ON courses BEGIN
-    INSERT INTO courses_fts(rowid, title, body, tags)
-    VALUES (NEW.id, NEW.title, NEW.description || ' ' || NEW.notes, NEW.tags);
-  END;
-
-  CREATE TRIGGER IF NOT EXISTS courses_fts_update AFTER UPDATE ON courses BEGIN
-    DELETE FROM courses_fts WHERE rowid = OLD.id;
-    INSERT INTO courses_fts(rowid, title, body, tags)
-    VALUES (NEW.id, NEW.title, NEW.description || ' ' || NEW.notes, NEW.tags);
-  END;
-
-  CREATE TRIGGER IF NOT EXISTS courses_fts_delete AFTER DELETE ON courses BEGIN
-    DELETE FROM courses_fts WHERE rowid = OLD.id;
-  END;
+  CREATE INDEX IF NOT EXISTS idx_documents_user ON documents(user_id);
+  CREATE INDEX IF NOT EXISTS idx_courses_user ON courses(user_id);
 `);
 
 export default db;
