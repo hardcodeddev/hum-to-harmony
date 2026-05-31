@@ -30,7 +30,7 @@ app.use('/api/courses', coursesRouter);
 app.use('/api/search', searchRouter);
 
 if (process.env.NODE_ENV === 'production') {
-  const staticPath = path.join(__dirname, '../../dist/client');
+  const staticPath = path.join(__dirname, '../dist/client');
   app.use(express.static(staticPath));
   app.get('*', (_req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));
