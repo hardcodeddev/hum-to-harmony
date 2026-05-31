@@ -26,7 +26,10 @@ export const api = {
   getDocuments: () => request<Document[]>('/documents'),
   uploadDocument: (formData: FormData) =>
     fetch(`${BASE}/documents`, { method: 'POST', credentials: 'include', body: formData }).then(async r => {
-      if (!r.ok) throw new Error((await r.json()).error || 'Upload failed');
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({ error: 'Upload failed' }));
+        throw new Error(err.error || 'Upload failed');
+      }
       return r.json();
     }),
   getDocument: (id: number) => request<Document>(`/documents/${id}`),
