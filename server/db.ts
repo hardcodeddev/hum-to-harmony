@@ -5,7 +5,15 @@ import fs from 'fs';
 const dataDir = path.join(process.cwd(), 'data');
 fs.mkdirSync(path.join(dataDir, 'uploads'), { recursive: true });
 
-const db = new DatabaseSync(path.join(dataDir, 'db.sqlite'));
+const dbPath = path.join(dataDir, 'db.sqlite');
+
+// Remove stale WAL/SHM files left by previous broken runs (server was crashing
+// at startup before any user data was written, so these contain no useful data).
+for (const suffix of ['-wal', '-shm']) {
+  try { fs.unlinkSync(dbPath + suffix); } catch { /* file doesn't exist, fine */ }
+}
+
+const db = new DatabaseSync(dbPath);
 
 db.exec('PRAGMA foreign_keys = ON');
 
